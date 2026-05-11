@@ -22,3 +22,25 @@ bool Piece::isPathClear(int fromRow, int fromCol, int toRow, int toCol, Piece* b
     }
     return true;
 }
+Pawn::Pawn(char c) : Piece(c, 'P') {}
+bool Pawn::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    int dir = (color == 'W') ? -1 : 1;
+    int startRow = (color == 'W') ? 6 : 1;
+    if (toCol == fromCol && toRow == fromRow + dir && board[toRow][toCol] == nullptr)
+        return true;
+    if (toCol == fromCol && fromRow == startRow && toRow == fromRow + 2 * dir
+        && board[fromRow + dir][fromCol] == nullptr && board[toRow][toCol] == nullptr)
+        return true;
+    if ((toCol == fromCol + 1 || toCol == fromCol - 1) && toRow == fromRow + dir
+        && board[toRow][toCol] != nullptr && isEnemy(board[toRow][toCol]))
+        return true;
+
+    return false;
+}
+Rook::Rook(char c) : Piece(c, 'R') {}
+bool Rook::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    if (fromRow != toRow && fromCol != toCol) return false;
+    if (!isPathClear(fromRow, fromCol, toRow, toCol, board)) return false;
+    if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
+    return true;
+}
