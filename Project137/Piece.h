@@ -19,4 +19,41 @@ public:
     bool isEnemy(Piece* other) const;
     bool isPathClear(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) const;
 };
+// ---- Derived Piece Classes ----
+
+class Pawn : public Piece {
+public:
+    Pawn(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
+
+class Rook : public Piece {
+public:
+    Rook(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
+
+class Knight : public Piece {
+public:
+    Knight(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
+
+class Bishop : public Piece {
+public:
+    Bishop(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
+
+class Queen : public Piece {
+public:
+    Queen(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
+
+class King : public Piece {
+public:
+    King(char c);
+    bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
+};
 
