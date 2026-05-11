@@ -44,3 +44,39 @@ bool Rook::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* bo
     if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
     return true;
 }
+Knight::Knight(char c) : Piece(c, 'N') {}
+bool Knight::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    int dr = abs(toRow - fromRow);
+    int dc = abs(toCol - fromCol);
+    if (!((dr == 2 && dc == 1) || (dr == 1 && dc == 2))) return false;
+    if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
+    return true;
+}
+Bishop::Bishop(char c) : Piece(c, 'B') {}
+bool Bishop::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    int dr = abs(toRow - fromRow);
+    int dc = abs(toCol - fromCol);
+    if (dr != dc) return false;
+    if (!isPathClear(fromRow, fromCol, toRow, toCol, board)) return false;
+    if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
+    return true;
+}
+Queen::Queen(char c) : Piece(c, 'Q') {}
+bool Queen::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    int dr = abs(toRow - fromRow);
+    int dc = abs(toCol - fromCol);
+    bool straight = (fromRow == toRow || fromCol == toCol);
+    bool diagonal = (dr == dc);
+    if (!straight && !diagonal) return false;
+    if (!isPathClear(fromRow, fromCol, toRow, toCol, board)) return false;
+    if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
+    return true;
+}
+King::King(char c) : Piece(c, 'K') {}
+bool King::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    int dr = abs(toRow - fromRow);
+    int dc = abs(toCol - fromCol);
+    if (dr > 1 || dc > 1) return false;
+    if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
+    return true;
+}
