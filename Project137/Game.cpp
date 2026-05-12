@@ -76,8 +76,16 @@ void Game::start() {
             cout << "  [!] That is not your piece!\n\n";
             continue;
         }
+
+        // First check if the piece can even make this move by its own rules
+        if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, board.getGrid())) {
+            cout << "  [!] Invalid move for this piece!\n\n";
+            continue;
+        }
+
+        // Then check if the move would leave own king in check
         if (!board.isValidMoveWithCheckProtection(fromRow, fromCol, toRow, toCol, currentTurn)) {
-            cout << "  [!] Invalid move! (You cannot leave your King in check.)\n\n";
+            cout << "  [!] Invalid move! This would leave your King in check.\n\n";
             continue;
         }
 
