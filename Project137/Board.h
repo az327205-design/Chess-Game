@@ -11,4 +11,7 @@ public:
 
     void setupBoard();
     void display() const;
+    Piece* getPiece(int row, int col) const;
+    bool movePiece(int fromRow, int fromCol, int toRow, int toCol);
+
 };

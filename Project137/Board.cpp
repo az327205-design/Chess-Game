@@ -87,3 +87,21 @@ void Board::display() const {
         << "\033[40m" << WHITE_PIECE << " White pieces (UPPERCASE) " << RESET << "\n";
     cout << "  P=Pawn  R=Rook  N=Knight  B=Bishop  Q=Queen  K=King\n\n";
 }
+
+Piece* Board::getPiece(int row, int col) const {
+    return grid[row][col];
+}
+
+bool Board::movePiece(int fromRow, int fromCol, int toRow, int toCol) {
+    if (fromRow < 0 || fromRow > 7 || fromCol < 0 || fromCol > 7) return false;
+    if (toRow < 0 || toRow  > 7 || toCol < 0 || toCol  > 7) return false;
+
+    Piece* piece = grid[fromRow][fromCol];
+    if (piece == nullptr) return false;
+    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) return false;
+
+    delete grid[toRow][toCol];
+    grid[toRow][toCol] = piece;
+    grid[fromRow][fromCol] = nullptr;
+    return true;
+}
