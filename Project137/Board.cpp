@@ -105,3 +105,90 @@ bool Board::movePiece(int fromRow, int fromCol, int toRow, int toCol) {
     grid[fromRow][fromCol] = nullptr;
     return true;
 }
+
+bool Board::isKingAlive(char color) const {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            if (grid[i][j] != nullptr &&
+                grid[i][j]->getColor() == color &&
+                grid[i][j]->getSymbol() == 'K')
+                return true;
+    return false;
+}
+
+bool Board::isInCheck(char color) {
+    // Find king
+    int kingRow = -1, kingCol = -1;
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            if (grid[i][j] != nullptr &&
+                grid[i][j]->getColor() == color &&
+                grid[i][j]->getSymbol() == 'K') {
+                kingRow = i; kingCol = j;
+            }
+    if (kingRow == -1) return false;
+
+    char enemy = (color == 'W') ? 'B' : 'W';
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            if (grid[i][j] != nullptr && grid[i][j]->getColor() == enemy)
+                if (grid[i][j]->isValidMove(i, j, kingRow, kingCol, grid))
+                    return true;
+    return false;
+}
+
+bool Board::isCheckmate(char color) {
+    // Not checkmate if not even in check
+    if (!isInCheck(color)) return false;
+
+    // Try every possible move for every piece of this color
+    // If any move results in the king no longer being in check, it's NOT checkmate
+    for (int fromRow = 0; fromRow < 8; fromRow++) {
+        for (int fromCol = 0; fromCol < 8; fromCol++) {
+            Piece* piece = grid[fromRow][fromCol];
+            if (piece == nullptr || piece->getColor() != color) continue;
+
+            for (int toRow = 0; toRow < 8; toRow++) {
+                for (int toCol = 0; toCol < 8; toCol++) {
+                    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) continue;
+
+                    // Simulate the move
+                    Piece* captured = grid[toRow][toCol];
+                    grid[toRow][toCol] = piece;
+                    grid[fromRow][fromCol] = nullptr;
+
+                    bool stillInCheck = isInCheck(color);
+
+                    // Undo the move
+                    grid[fromRow][fromCol] = piece;
+                    grid[toRow][toCol] = captured;
+
+                    if (!stillInCheck)
+                        return false; // Found a move that escapes check
+                }
+            }
+        }
+    }
+
+    // No escape found — it's checkmate
+    return true;
+}
+
+bool Board::isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, int toCol, char color) {
+    Piece* piece = grid[fromRow][fromCol];
+    if (piece == nullptr) return false;
+    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) return false;
+
+    // Simulate the move
+    Piece* captured = grid[toRow][toCol];
+    grid[toRow][toCol] = piece;
+    grid[fromRow][fromCol] = nullptr;
+
+    bool leavesKingInCheck = isInCheck(color);
+
+    // Undo the move
+    grid[fromRow][fromCol] = piece;
+    grid[toRow][toCol] = captured;
+
+    return !leavesKingInCheck;
+}
