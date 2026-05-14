@@ -168,6 +168,7 @@ bool Board::isCheckmate(char color) {
 
     // No escape found — it's checkmate
     return true;
+
 }
 
 bool Board::isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, int toCol, char color) {

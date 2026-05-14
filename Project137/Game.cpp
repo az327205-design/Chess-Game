@@ -1,5 +1,6 @@
 #include "Game.h"
 #include <iostream>
+#include <stdexcept>
 using namespace std;
 
 Game::Game() : currentTurn('W') {}
@@ -32,7 +33,6 @@ void Game::start() {
     while (true) {
         board.display();
 
-        // Checkmate detection — checked BEFORE asking for input
         if (board.isCheckmate(currentTurn)) {
             char winner = (currentTurn == 'W') ? 'B' : 'W';
             cout << "==========================================\n";
@@ -41,10 +41,8 @@ void Game::start() {
             break;
         }
 
-        // Check warning
-        if (board.isInCheck(currentTurn)) {
+        if (board.isInCheck(currentTurn))
             cout << "  !! " << (currentTurn == 'W' ? "WHITE" : "BLACK") << " IS IN CHECK !!\n\n";
-        }
 
         cout << (currentTurn == 'W' ? "White" : "Black") << "'s turn.\n";
         cout << "Enter move: ";
@@ -57,41 +55,36 @@ void Game::start() {
 
         cin >> to;
 
-        if (!isValidInput(from) || !isValidInput(to)) {
-            cout << "  [!] Invalid input! Use format like: e2 e4\n\n";
-            continue;
+        try {
+            if (!isValidInput(from) || !isValidInput(to))
+                throw invalid_argument("Invalid input! Use format like: e2 e4");
+
+            int fromRow, fromCol, toRow, toCol;
+            parsePosition(from, fromRow, fromCol);
+            parsePosition(to, toRow, toCol);
+
+            Piece* piece = board.getPiece(fromRow, fromCol);
+
+            if (piece == nullptr)
+                throw runtime_error("No piece at " + from + "!");
+
+            if (piece->getColor() != currentTurn)
+                throw runtime_error("That is not your piece!");
+
+            if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, board.getGrid()))
+                throw runtime_error("Invalid move for this piece!");
+
+            if (!board.isValidMoveWithCheckProtection(fromRow, fromCol, toRow, toCol, currentTurn))
+                throw runtime_error("This move would leave your King in check!");
+
+            board.movePiece(fromRow, fromCol, toRow, toCol);
+            currentTurn = (currentTurn == 'W') ? 'B' : 'W';
         }
-
-        int fromRow, fromCol, toRow, toCol;
-        parsePosition(from, fromRow, fromCol);
-        parsePosition(to, toRow, toCol);
-
-        Piece* piece = board.getPiece(fromRow, fromCol);
-
-        if (piece == nullptr) {
-            cout << "  [!] No piece at " << from << "!\n\n";
-            continue;
+        catch (const invalid_argument& e) {
+            cout << "  [!] " << e.what() << "\n\n";
         }
-        if (piece->getColor() != currentTurn) {
-            cout << "  [!] That is not your piece!\n\n";
-            continue;
+        catch (const runtime_error& e) {
+            cout << "  [!] " << e.what() << "\n\n";
         }
-
-        // First check if the piece can even make this move by its own rules
-        if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, board.getGrid())) {
-            cout << "  [!] Invalid move for this piece!\n\n";
-            continue;
-        }
-
-        // Then check if the move would leave own king in check
-        if (!board.isValidMoveWithCheckProtection(fromRow, fromCol, toRow, toCol, currentTurn)) {
-            cout << "  [!] Invalid move! This would leave your King in check.\n\n";
-            continue;
-        }
-
-        board.movePiece(fromRow, fromCol, toRow, toCol);
-
-        // Switch turns
-        currentTurn = (currentTurn == 'W') ? 'B' : 'W';
     }
 }
