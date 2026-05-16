@@ -23,12 +23,17 @@ public:
 
 class Pawn : public Piece {
 public:
+    bool hasMoved;             // tracks first move (for 2-square advance)
+    bool enPassantVulnerable;  // true for exactly one turn after a 2-square advance
+
     Pawn(char c);
     bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
 };
 
 class Rook : public Piece {
 public:
+    bool hasMoved;  // needed for castling legality
+
     Rook(char c);
     bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
 };

@@ -1,5 +1,6 @@
 #include "Piece.h"
 #include <cstdlib>
+#include <stdexcept>
 Piece::Piece(char c, char s) : color(c), symbol(s) {}
 char Piece::getColor() const { return color; }
 char Piece::getSymbol() const { return symbol; }
@@ -22,22 +23,53 @@ bool Piece::isPathClear(int fromRow, int fromCol, int toRow, int toCol, Piece* b
     }
     return true;
 }
-Pawn::Pawn(char c) : Piece(c, 'P') {}
+Pawn::Pawn(char c) : Piece(c, 'P'), hasMoved(false), enPassantVulnerable(false)
+{}
 bool Pawn::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
+    // Bounds check
+    if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7)
+        return false;
+
     int dir = (color == 'W') ? -1 : 1;
     int startRow = (color == 'W') ? 6 : 1;
+
+    // Single step forward
     if (toCol == fromCol && toRow == fromRow + dir && board[toRow][toCol] == nullptr)
         return true;
-    if (toCol == fromCol && fromRow == startRow && toRow == fromRow + 2 * dir
-        && board[fromRow + dir][fromCol] == nullptr && board[toRow][toCol] == nullptr)
+
+    // Double step forward from starting row
+    if (toCol == fromCol && fromRow == startRow &&
+        toRow == fromRow + 2 * dir &&
+        board[fromRow + dir][fromCol] == nullptr &&
+        board[toRow][toCol] == nullptr)
         return true;
-    if ((toCol == fromCol + 1 || toCol == fromCol - 1) && toRow == fromRow + dir
-        && board[toRow][toCol] != nullptr && isEnemy(board[toRow][toCol]))
+
+    // Diagonal capture of a real enemy piece
+    if ((toCol == fromCol + 1 || toCol == fromCol - 1) &&
+        toRow == fromRow + dir &&
+        board[toRow][toCol] != nullptr &&
+        isEnemy(board[toRow][toCol]))
         return true;
+
+    // EN PASSANT: diagonal move to an EMPTY square.
+    // The captured pawn sits beside us on the same row.
+    // Board::movePiece handles physically removing the captured pawn.
+    if ((toCol == fromCol + 1 || toCol == fromCol - 1) &&
+        toRow == fromRow + dir &&
+        board[toRow][toCol] == nullptr) {
+        Piece* adjacent = board[fromRow][toCol];
+        if (adjacent != nullptr &&
+            adjacent->getSymbol() == 'P' &&
+            isEnemy(adjacent)) {
+            Pawn* adjacentPawn = dynamic_cast<Pawn*>(adjacent);
+            if (adjacentPawn != nullptr && adjacentPawn->enPassantVulnerable)
+                return true;
+        }
+    }
 
     return false;
 }
-Rook::Rook(char c) : Piece(c, 'R') {}
+Rook::Rook(char c) : Piece(c, 'R'), hasMoved(false) {}
 bool Rook::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
     if (fromRow != toRow && fromCol != toCol) return false;
     if (!isPathClear(fromRow, fromCol, toRow, toCol, board)) return false;
