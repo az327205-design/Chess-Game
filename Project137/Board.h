@@ -27,4 +27,7 @@ public:
 
     // A pawn that reached the back rank
     void promotePawn(int row, int col, char choice);
+
+    // Stalemate detection
+    bool isStalemate(char color);
 };

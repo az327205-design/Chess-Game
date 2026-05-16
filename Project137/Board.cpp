@@ -235,3 +235,20 @@ void Board::promotePawn(int row, int col, char choice) {
     default:  grid[row][col] = new Queen(color);  break;
     }
 }
+
+bool Board::isStalemate(char color) {
+    if (isInCheck(color)) return false;
+
+    for (int fromRow = 0; fromRow < 8; fromRow++)
+        for (int fromCol = 0; fromCol < 8; fromCol++) {
+            Piece* piece = grid[fromRow][fromCol];
+            if (!piece || piece->getColor() != color) continue;
+            for (int toRow = 0; toRow < 8; toRow++)
+                for (int toCol = 0; toCol < 8; toCol++) {
+                    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) continue;
+                    if (isValidMoveWithCheckProtection(fromRow, fromCol, toRow, toCol, color))
+                        return false;
+                }
+        }
+    return true;
+}
