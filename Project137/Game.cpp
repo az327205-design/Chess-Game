@@ -80,20 +80,29 @@ void Game::start() {
     cout << "    FAST NUCES Faisalabad-Chiniot Campus\n";
     cout << "==========================================\n";
     cout << "  How to play:\n";
-    cout << "    Enter moves as:  <from> <to>\n";
-    cout << "    Example:         e2 e4\n";
-    cout << "  Type 'quit' to exit.\n";
-    cout << "==========================================\n";
+    cout << "    Enter moves as:  <from> <to>   (e.g. e2 e4)\n";
+    cout << "    Castling:        O-O  (kingside)  |  O-O-O (queenside)\n";
+    cout << "    Type 'quit' to exit.\n";
+    cout << "==========================================\n\n";
 
     string from, to;
 
     while (true) {
         board.display();
 
+        // ---- Checkmate ----
         if (board.isCheckmate(currentTurn)) {
             char winner = (currentTurn == 'W') ? 'B' : 'W';
             cout << "==========================================\n";
             cout << "  CHECKMATE! " << (winner == 'W' ? "White" : "Black") << " wins!\n";
+            cout << "==========================================\n";
+            break;
+        }
+
+        // ---- Stalemate ----
+        if (board.isStalemate(currentTurn)) {
+            cout << "==========================================\n";
+            cout << "  STALEMATE! The game is a draw.\n";
             cout << "==========================================\n";
             break;
         }
@@ -103,45 +112,98 @@ void Game::start() {
 
         cout << (currentTurn == 'W' ? "White" : "Black") << "'s turn.\n";
         cout << "Enter move: ";
-        cin >> from;
-
-        if (from == "quit") {
-            cout << "Game ended by player. Goodbye!\n";
-            break;
-        }
-
-        cin >> to;
 
         try {
-            if (!isValidInput(from) || !isValidInput(to))
-                throw invalid_argument("Invalid input! Use format like: e2 e4");
+            if (!(cin >> from))
+                throw runtime_error("Input stream error. Please try again.");
+
+            // Quit
+            if (from == "quit" || from == "exit") {
+                cout << "Game ended by player. Goodbye!\n";
+                break;
+            }
+
+            // ---- Castling shorthand ----
+            if (from == "O-O" || from == "o-o" ||
+                from == "O-O-O" || from == "o-o-o") {
+                if (handleCastling(from)) {
+                    board.clearEnPassant(currentTurn);
+                    currentTurn = (currentTurn == 'W') ? 'B' : 'W';
+                    continue;
+                }
+            }
+
+            // ---- Normal move ----
+            if (!(cin >> to))
+                throw runtime_error("Failed to read destination square.");
+
+            if (!isValidInput(from))
+                throw invalid_argument(
+                    "Invalid 'from' square \"" + from + "\". Use format: e2");
+            if (!isValidInput(to))
+                throw invalid_argument(
+                    "Invalid 'to' square \"" + to + "\". Use format: e4");
 
             int fromRow, fromCol, toRow, toCol;
             parsePosition(from, fromRow, fromCol);
             parsePosition(to, toRow, toCol);
 
             Piece* piece = board.getPiece(fromRow, fromCol);
-
             if (piece == nullptr)
                 throw runtime_error("No piece at " + from + "!");
-
             if (piece->getColor() != currentTurn)
                 throw runtime_error("That is not your piece!");
-
             if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, board.getGrid()))
                 throw runtime_error("Invalid move for this piece!");
-
             if (!board.isValidMoveWithCheckProtection(fromRow, fromCol, toRow, toCol, currentTurn))
                 throw runtime_error("This move would leave your King in check!");
 
+            // Clear opponent's en passant vulnerability before moving
+            char opponent = (currentTurn == 'W') ? 'B' : 'W';
+            board.clearEnPassant(opponent);
+
             board.movePiece(fromRow, fromCol, toRow, toCol);
+
+            // ---- Pawn Promotion ----
+            Piece* movedPiece = board.getPiece(toRow, toCol);
+            if (movedPiece && movedPiece->getSymbol() == 'P') {
+                if ((movedPiece->getColor() == 'W' && toRow == 0) ||
+                    (movedPiece->getColor() == 'B' && toRow == 7)) {
+                    char promoteTo = askPromotion();
+                    board.promotePawn(toRow, toCol, promoteTo);
+                    cout << "  Pawn promoted to "
+                        << (promoteTo == 'Q' ? "Queen" :
+                            promoteTo == 'R' ? "Rook" :
+                            promoteTo == 'B' ? "Bishop" : "Knight") << "!\n\n";
+                }
+            }
+
             currentTurn = (currentTurn == 'W') ? 'B' : 'W';
         }
         catch (const invalid_argument& e) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "  [!] " << e.what() << "\n\n";
         }
         catch (const runtime_error& e) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "  [!] " << e.what() << "\n\n";
+        }
+        catch (const out_of_range& e) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "  [!] Out-of-range error: " << e.what() << "\n\n";
+        }
+        catch (const logic_error& e) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "  [!] Logic error: " << e.what() << "\n\n";
+        }
+        catch (...) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "  [!] An unexpected error occurred. Please try again.\n\n";
         }
     }
 }
