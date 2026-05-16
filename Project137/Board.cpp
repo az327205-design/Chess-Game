@@ -204,3 +204,34 @@ bool Board::isSquareAttacked(int row, int col, char attackerColor) const {
         }
     return false;
 }
+
+void Board::clearEnPassant(char color) {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            Piece* p = grid[i][j];
+            if (p && p->getColor() == color && p->getSymbol() == 'P') {
+                Pawn* pawn = dynamic_cast<Pawn*>(p);
+                if (pawn) pawn->enPassantVulnerable = false;
+            }
+        }
+}
+
+void Board::promotePawn(int row, int col, char choice) {
+    if (row < 0 || row > 7 || col < 0 || col > 7)
+        throw out_of_range("promotePawn — coordinates out of range.");
+
+    Piece* p = grid[row][col];
+    if (!p || p->getSymbol() != 'P')
+        throw logic_error("promotePawn — no pawn at specified square.");
+
+    char color = p->getColor();
+    delete grid[row][col];
+
+    switch (choice) {
+    case 'Q': grid[row][col] = new Queen(color);  break;
+    case 'R': grid[row][col] = new Rook(color);   break;
+    case 'B': grid[row][col] = new Bishop(color); break;
+    case 'N': grid[row][col] = new Knight(color); break;
+    default:  grid[row][col] = new Queen(color);  break;
+    }
+}

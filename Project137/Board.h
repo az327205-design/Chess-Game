@@ -22,4 +22,9 @@ public:
     bool isInCheck(char color);
     bool isCheckmate(char color);
     bool isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, int toCol, char color);
+
+    void clearEnPassant(char color);
+
+    // A pawn that reached the back rank
+    void promotePawn(int row, int col, char choice);
 };
