@@ -169,19 +169,29 @@ bool Board::isCheckmate(char color) {
 
 bool Board::isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, int toCol, char color) {
     Piece* piece = grid[fromRow][fromCol];
-    if (piece == nullptr) return false;
-    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) return false;
+    if (!piece) return false;
+
+    // Detect en passant: diagonal pawn move to empty square
+    bool isEnPassant = (piece->getSymbol() == 'P' &&
+        fromCol != toCol &&
+        grid[toRow][toCol] == nullptr);
+
+    Piece* captured = grid[toRow][toCol];
+    Piece* epCaptured = nullptr;
 
     // Simulate the move
-    Piece* captured = grid[toRow][toCol];
     grid[toRow][toCol] = piece;
     grid[fromRow][fromCol] = nullptr;
+    if (isEnPassant) {
+        epCaptured = grid[fromRow][toCol];
+        grid[fromRow][toCol] = nullptr;
+    }
 
     bool leavesKingInCheck = isInCheck(color);
-
-    // Undo the move
     grid[fromRow][fromCol] = piece;
     grid[toRow][toCol] = captured;
+    if (isEnPassant)
+        grid[fromRow][toCol] = epCaptured;
 
     return !leavesKingInCheck;
 }
