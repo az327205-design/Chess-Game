@@ -3,7 +3,9 @@
 
 class Board {
 private:
+private:
     Piece* grid[8][8];
+    bool isSquareAttacked(int row, int col, char attackerColor) const;
 
 public:
     Board();

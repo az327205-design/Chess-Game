@@ -192,3 +192,15 @@ bool Board::isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, 
 
     return !leavesKingInCheck;
 }
+
+bool Board::isSquareAttacked(int row, int col, char attackerColor) const {
+    Piece* (&mutableGrid)[8][8] = const_cast<Piece * (&)[8][8]>(grid);
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            Piece* p = mutableGrid[i][j];
+            if (p && p->getColor() == attackerColor)
+                if (p->isValidMove(i, j, row, col, mutableGrid))
+                    return true;
+        }
+    return false;
+}
