@@ -115,25 +115,18 @@ bool Board::isKingAlive(char color) const {
     return false;
 }
 
-bool Board::isInCheck(char color) {
-    // Find king
+bool Board::isInCheck(char color) const {
     int kingRow = -1, kingCol = -1;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++)
-            if (grid[i][j] != nullptr &&
+            if (grid[i][j] &&
                 grid[i][j]->getColor() == color &&
                 grid[i][j]->getSymbol() == 'K') {
                 kingRow = i; kingCol = j;
             }
     if (kingRow == -1) return false;
-
     char enemy = (color == 'W') ? 'B' : 'W';
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (grid[i][j] != nullptr && grid[i][j]->getColor() == enemy)
-                if (grid[i][j]->isValidMove(i, j, kingRow, kingCol, grid))
-                    return true;
-    return false;
+    return isSquareAttacked(kingRow, kingCol, enemy);
 }
 
 bool Board::isCheckmate(char color) {
@@ -298,3 +291,4 @@ bool Board::canCastleQueenside(char color) {
 
     return true;
 }
+

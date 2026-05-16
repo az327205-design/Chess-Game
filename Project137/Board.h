@@ -19,7 +19,7 @@ public:
     bool movePiece(int fromRow, int fromCol, int toRow, int toCol);
 
     bool isKingAlive(char color) const;
-    bool isInCheck(char color);
+    bool isInCheck(char color) const;
     bool isCheckmate(char color);
     bool isValidMoveWithCheckProtection(int fromRow, int fromCol, int toRow, int toCol, char color);
 
