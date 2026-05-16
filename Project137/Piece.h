@@ -58,7 +58,10 @@ public:
 
 class King : public Piece {
 public:
+    bool hasMoved;  // needed for castling legality
+
     King(char c);
+    // Normal 1-square moves only; castling is handled in Board::movePiece
     bool isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) override;
 };
 

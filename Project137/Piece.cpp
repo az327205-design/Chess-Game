@@ -104,7 +104,7 @@ bool Queen::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* b
     if (board[toRow][toCol] != nullptr && !isEnemy(board[toRow][toCol])) return false;
     return true;
 }
-King::King(char c) : Piece(c, 'K') {}
+King::King(char c) : Piece(c, 'K'), hasMoved(false) {}
 bool King::isValidMove(int fromRow, int fromCol, int toRow, int toCol, Piece* board[8][8]) {
     int dr = abs(toRow - fromRow);
     int dc = abs(toCol - fromCol);
