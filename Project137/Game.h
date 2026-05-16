@@ -10,7 +10,7 @@ private:
     void parsePosition(const string& pos, int& row, int& col);
     bool isValidInput(const string& pos);
     char askPromotion();                     // asks player which piece to promote to
-
+    bool handleCastling(const string& cmd);  // handles "O-O" / "O-O-O" input
 public:
     Game();
     void start();

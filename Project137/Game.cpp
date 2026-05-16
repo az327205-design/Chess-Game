@@ -50,6 +50,30 @@ char Game::askPromotion() {
     return choice;
 }
 
+bool Game::handleCastling(const string& cmd) {
+    int row = (currentTurn == 'W') ? 7 : 0;
+
+    if (cmd == "O-O" || cmd == "o-o") {
+        if (!board.canCastleKingside(currentTurn))
+            throw runtime_error("Kingside castling is not available right now.");
+        if (!board.isValidMoveWithCheckProtection(row, 4, row, 6, currentTurn))
+            throw runtime_error("Castling would leave your King in check.");
+        board.movePiece(row, 4, row, 6);
+        return true;
+    }
+
+    if (cmd == "O-O-O" || cmd == "o-o-o") {
+        if (!board.canCastleQueenside(currentTurn))
+            throw runtime_error("Queenside castling is not available right now.");
+        if (!board.isValidMoveWithCheckProtection(row, 4, row, 2, currentTurn))
+            throw runtime_error("Castling would leave your King in check.");
+        board.movePiece(row, 4, row, 2);
+        return true;
+    }
+
+    return false;
+}
+
 void Game::start() {
     cout << "==========================================\n";
     cout << "        CHESS GAME  -  OOP in C++\n";
