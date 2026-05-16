@@ -1,11 +1,14 @@
 #include "Game.h"
 #include <iostream>
 #include <stdexcept>
+#include <limits>
 using namespace std;
 
 Game::Game() : currentTurn('W') {}
 
 void Game::parsePosition(const string& pos, int& row, int& col) {
+    if (pos.size() < 2)
+        throw invalid_argument("Position string too short: \"" + pos + "\"");
     col = pos[0] - 'a';
     row = 8 - (pos[1] - '0');
 }
