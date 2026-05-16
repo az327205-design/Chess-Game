@@ -92,16 +92,79 @@ Piece* Board::getPiece(int row, int col) const {
 }
 
 bool Board::movePiece(int fromRow, int fromCol, int toRow, int toCol) {
-    if (fromRow < 0 || fromRow > 7 || fromCol < 0 || fromCol > 7) return false;
-    if (toRow < 0 || toRow  > 7 || toCol < 0 || toCol  > 7) return false;
+    if (fromRow < 0 || fromRow > 7 || fromCol < 0 || fromCol > 7)
+        throw invalid_argument("Source square is out of bounds.");
+    if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7)
+        throw invalid_argument("Destination square is out of bounds.");
 
     Piece* piece = grid[fromRow][fromCol];
-    if (piece == nullptr) return false;
-    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid)) return false;
+    if (piece == nullptr)
+        throw invalid_argument("No piece at source square.");
 
-    delete grid[toRow][toCol];
+    char color = piece->getColor();
+    char enemy = (color == 'W') ? 'B' : 'W';
+
+    // CASTLING: King moves two squares sideways
+    if (piece->getSymbol() == 'K' &&
+        fromRow == toRow &&
+        abs(toCol - fromCol) == 2) {
+
+        bool kingSide = (toCol == 6);
+
+        if (kingSide && !canCastleKingside(color))
+            throw runtime_error("Kingside castling is not available.");
+        if (!kingSide && !canCastleQueenside(color))
+            throw runtime_error("Queenside castling is not available.");
+
+        int rookFromCol = kingSide ? 7 : 0;
+        int rookToCol = kingSide ? 5 : 3;
+
+        grid[toRow][toCol] = piece;
+        grid[fromRow][fromCol] = nullptr;
+        dynamic_cast<King*>(piece)->hasMoved = true;
+
+        grid[toRow][rookToCol] = grid[toRow][rookFromCol];
+        grid[toRow][rookFromCol] = nullptr;
+        dynamic_cast<Rook*>(grid[toRow][rookToCol])->hasMoved = true;
+
+        return true;
+    }
+
+    //  MOVE VALIDATION
+    if (!piece->isValidMove(fromRow, fromCol, toRow, toCol, grid))
+        return false;
+
+    // EN PASSANT CAPTURE 
+    bool enPassantCapture = false;
+    if (piece->getSymbol() == 'P' &&
+        fromCol != toCol &&
+        grid[toRow][toCol] == nullptr) {
+        Piece* captured = grid[fromRow][toCol];
+        if (!captured || captured->getSymbol() != 'P' || captured->getColor() != enemy)
+            return false;
+        delete grid[fromRow][toCol];
+        grid[fromRow][toCol] = nullptr;
+        enPassantCapture = true;
+    }
+    if (!enPassantCapture)
+        delete grid[toRow][toCol];
     grid[toRow][toCol] = piece;
     grid[fromRow][fromCol] = nullptr;
+
+    if (piece->getSymbol() == 'K')
+        dynamic_cast<King*>(piece)->hasMoved = true;
+    else if (piece->getSymbol() == 'R')
+        dynamic_cast<Rook*>(piece)->hasMoved = true;
+
+    // MARK EN PASSANT VULNERABILITY 
+    if (piece->getSymbol() == 'P') {
+        Pawn* pawn = dynamic_cast<Pawn*>(piece);
+        if (pawn) {
+            if (abs(toRow - fromRow) == 2)
+                pawn->enPassantVulnerable = true;
+            pawn->hasMoved = true;
+        }
+    }
     return true;
 }
 
