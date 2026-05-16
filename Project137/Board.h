@@ -30,4 +30,8 @@ public:
 
     // Stalemate detection
     bool isStalemate(char color);
+
+    // Castling availability checks
+    bool canCastleKingside(char color);
+    bool canCastleQueenside(char color);
 };

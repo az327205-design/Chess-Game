@@ -252,3 +252,49 @@ bool Board::isStalemate(char color) {
         }
     return true;
 }
+
+bool Board::canCastleKingside(char color) {
+    int row = (color == 'W') ? 7 : 0;
+    char enemy = (color == 'W') ? 'B' : 'W';
+
+    Piece* king = grid[row][4];
+    Piece* rook = grid[row][7];
+    if (!king || king->getSymbol() != 'K' || king->getColor() != color) return false;
+    if (!rook || rook->getSymbol() != 'R' || rook->getColor() != color) return false;
+
+    King* k = dynamic_cast<King*>(king);
+    Rook* r = dynamic_cast<Rook*>(rook);
+    if (!k || k->hasMoved) return false;
+    if (!r || r->hasMoved) return false;
+
+    if (grid[row][5] || grid[row][6]) return false;
+
+    if (isSquareAttacked(row, 4, enemy)) return false;
+    if (isSquareAttacked(row, 5, enemy)) return false;
+    if (isSquareAttacked(row, 6, enemy)) return false;
+
+    return true;
+}
+
+bool Board::canCastleQueenside(char color) {
+    int row = (color == 'W') ? 7 : 0;
+    char enemy = (color == 'W') ? 'B' : 'W';
+
+    Piece* king = grid[row][4];
+    Piece* rook = grid[row][0];
+    if (!king || king->getSymbol() != 'K' || king->getColor() != color) return false;
+    if (!rook || rook->getSymbol() != 'R' || rook->getColor() != color) return false;
+
+    King* k = dynamic_cast<King*>(king);
+    Rook* r = dynamic_cast<Rook*>(rook);
+    if (!k || k->hasMoved) return false;
+    if (!r || r->hasMoved) return false;
+
+    if (grid[row][1] || grid[row][2] || grid[row][3]) return false;
+
+    if (isSquareAttacked(row, 4, enemy)) return false;
+    if (isSquareAttacked(row, 3, enemy)) return false;
+    if (isSquareAttacked(row, 2, enemy)) return false;
+
+    return true;
+}
