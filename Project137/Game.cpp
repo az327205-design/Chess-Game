@@ -20,6 +20,36 @@ bool Game::isValidInput(const string& pos) {
     return true;
 }
 
+char Game::askPromotion() {
+    char choice = 'Q';
+    cout << "\n  *** PAWN PROMOTION! ***\n";
+    cout << "  Choose promotion piece:\n";
+    cout << "    Q = Queen  (recommended)\n";
+    cout << "    R = Rook\n";
+    cout << "    B = Bishop\n";
+    cout << "    N = Knight\n";
+    cout << "  Your choice: ";
+
+    string input;
+    while (true) {
+        try {
+            if (!(cin >> input))
+                throw runtime_error("Failed to read promotion choice.");
+            if (input.size() != 1)
+                throw invalid_argument("Please enter exactly one letter (Q/R/B/N).");
+            char c = toupper(input[0]);
+            if (c != 'Q' && c != 'R' && c != 'B' && c != 'N')
+                throw invalid_argument("Invalid choice. Enter Q, R, B, or N.");
+            choice = c;
+            break;
+        }
+        catch (const invalid_argument& e) {
+            cout << "  [!] " << e.what() << "\n  Your choice: ";
+        }
+    }
+    return choice;
+}
+
 void Game::start() {
     cout << "==========================================\n";
     cout << "        CHESS GAME  -  OOP in C++\n";
