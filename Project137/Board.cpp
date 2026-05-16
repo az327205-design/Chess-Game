@@ -1,5 +1,6 @@
 ﻿#include "Board.h"
 #include <iostream>
+#include <stdexcept>
 using namespace std;
 
 Board::Board() {
@@ -85,6 +86,8 @@ void Board::display() const {
 }
 
 Piece* Board::getPiece(int row, int col) const {
+    if (row < 0 || row > 7 || col < 0 || col > 7)
+        throw out_of_range("Board::getPiece — coordinates out of range.");
     return grid[row][col];
 }
 
