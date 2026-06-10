@@ -159,10 +159,10 @@ void Game::start() {
                 throw runtime_error("This move would leave your King in check!");
 
             // Clear opponent's en passant vulnerability before moving
-            char opponent = (currentTurn == 'W') ? 'B' : 'W';
-            board.clearEnPassant(opponent);
 
             board.movePiece(fromRow, fromCol, toRow, toCol);
+            char opponent = (currentTurn == 'W') ? 'B' : 'W';
+            board.clearEnPassant(opponent);
 
             // ---- Pawn Promotion ----
             Piece* movedPiece = board.getPiece(toRow, toCol);
